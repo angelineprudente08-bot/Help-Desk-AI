@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% from "_badges.html" import priority_badge %}
+{% block title %}Dashboard - HelpDesk AI{% endblock %}
+{% block content %}
+{% set c = counts %}
+{% if session.role == 'requester' %}
+  {% set tiles = [
+    ('Open requests', c.get('New', 0) + c.get('Assigned', 0) + c.get('In Progress', 0), 'ticket', 'Being handled by support'),
+    ('Waiting for you', c.get('Waiting for User', 0), 'alert', 'Reply to keep them moving'),
+    ('Resolved', c.get('Resolved', 0) + c.get('Closed', 0), 'check', 'Resolved or closed'),
+    ('Unread updates', unread_count, 'bell', 'Replies and status changes')] %}
+  {% set lead = 'Here is the latest on your service requests.' %}
+{% else %}
+  {% set tiles = [
+    ('New', c.get('New', 0), 'inbox', 'Awaiting assignment'),
+    ('In progress', c.get('Assigned', 0) + c.get('In Progress', 0), 'clock', 'Assigned or being worked on'),
+    ('Waiting for user', c.get('Waiting for User', 0), 'alert', 'Requester needs to reply'),
+    ('Resolved', c.get('Resolved', 0) + c.get('Closed', 0), 'check', 'Resolved or closed')] %}
+  {% set lead = 'Here is an overview of ' ~ ('all tickets' if session.role == 'administrator' else 'the tickets assigned to you') ~ '.' %}
+{% endif %}
+
+<div class="dash">
+  <section class="tile hello">
+    <h1>Hello, {{ session.name.split(' ')[0] }}!</h1>
+    <p class="hello-lead">{{ lead }}</p>
+    <a class="hello-link" href="{{ url_for('my_tickets') if session.role == 'requester' else url_for('queue') }}">{% set noun = 'request' if session.role == 'requester' else 'ticket' %}{{ total }} {{ noun if total == 1 else noun ~ 's' }} in total ›</a>
+    <svg class="hello-art" viewBox="0 0 320 170" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe0fb"/><stop offset="1" stop-color="#7ea6e8"/></linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1d3f80"/><stop offset="1" stop-color="#0d2453"/></linearGradient>
+      </defs>
+      <circle cx="250" cy="70" r="62" fill="url(#g1)" opacity=".55"/>
+      <circle cx="70" cy="120" r="34" fill="url(#g1)" opacity=".4"/>
+      <rect x="120" y="34" width="150" height="96" rx="18" fill="url(#g2)"/>
+      <rect x="138" y="54" width="70" height="9" rx="4.5" fill="#8fb3f0"/>
+      <rect x="138" y="72" width="110" height="7" rx="3.5" fill="#3d5f9e"/>
+      <rect x="138" y="86" width="90" height="7" rx="3.5" fill="#3d5f9e"/>
+      <circle cx="244" cy="108" r="12" fill="#e7efff"/>
+      <path d="M238 108l4.5 4.5 8-8" fill="none" stroke="#173a7a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="60" y="56" width="92" height="58" rx="14" fill="#fff" stroke="#d6e2f6"/>
+      <circle cx="80" cy="76" r="8" fill="#dbe7fb"/>
+      <rect x="94" y="72" width="44" height="7" rx="3.5" fill="#c3d5f3"/>
+      <rect x="74" y="92" width="64" height="7" rx="3.5" fill="#e3ecfa"/>
+    </svg>
+  </section>
+
+  <div class="stats">
+    {% for label, value, ic, hint in tiles %}
+      <section class="tile stat">
+        <div class="stat-head"><span class="stat-icon">{{ icon(ic) }}</span><span class="stat-label">{{ label }}</span></div>
+        <div class="stat-value">{{ value }}</div>
+        <div class="stat-hint">{{ hint }}</div>
+      </section>
+    {% endfor %}
+  </div>
+
+  <section class="tile updates">
+    <div class="tile-head"><h2>Latest updates</h2><a href="{{ url_for('notifications') }}">View all</a></div>
+    {% for n in latest %}
+      <a class="update {{ 'unread' if not n.is_read }}" href="{{ url_for('ticket_detail', ticket_id=n.ticket_id) }}">
+        <span class="update-icon">{{ icon('bell') }}</span>
+        <span><span class="update-body">{{ n.body }}</span><span class="update-when">{{ n.created_at }}</span></span>
+      </a>
+    {% else %}
+      <p class="text-muted small mb-0">No updates yet. Replies and status changes will appear here.</p>
+    {% endfor %}
+  </section>
+
+  <section class="tile recent">
+    <div class="tile-head"><h2>Recent {{ 'requests' if session.role == 'requester' else 'tickets' }}</h2>
+      <a href="{{ url_for('my_tickets') if session.role == 'requester' else url_for('queue') }}">View all</a></div>
+    {% for t in recent %}
+      <a class="recent-row" href="{{ url_for('ticket_detail', ticket_id=t.id) }}">
+        <span class="recent-id">#{{ t.id }}</span>
+        <span class="recent-title">{{ t.title }}</span>
+        {% if t.priority %}<span class="badge priority priority-{{ t.priority|lower }}">{{ t.priority }}</span>{% endif %}
+        <span class="badge bg-secondary status-{{ t.status|lower|replace(' ', '-') }}">{{ t.status }}</span>
+      </a>
+    {% else %}
+      <p class="text-muted small mb-0">No tickets yet.</p>
+    {% endfor %}
+  </section>
+
+  <section class="tile analytics">
+    <div class="tile-head"><h2>Ticket analytics</h2><span class="small text-muted">Last 6 months</span></div>
+    {% set peak = [chart|map(attribute=1)|max, 1]|max %}
+    {% set w, h, pad = 300, 120, 14 %}
+    {% set step = (w - 2 * pad) / (chart|length - 1) %}
+    {% set ns = namespace(line='', pts=[]) %}
+    {% for month, n in chart %}
+      {% set x = pad + loop.index0 * step %}{% set y = h - pad - (n / peak) * (h - 2 * pad) %}
+      {% set ns.line = ns.line ~ ('M' if loop.first else ' L') ~ ' %.1f %.1f'|format(x, y) %}
+      {% set ns.pts = ns.pts + [(x, y, n)] %}
+    {% endfor %}
+    <svg class="chart" viewBox="0 0 {{ w }} {{ h + 22 }}" role="img" aria-label="Tickets submitted per month">
+      <defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f5fb3" stop-opacity=".28"/><stop offset="1" stop-color="#2f5fb3" stop-opacity="0"/></linearGradient></defs>
+      {% for i in range(3) %}<line x1="{{ pad }}" x2="{{ w - pad }}" y1="{{ pad + i * (h - 2 * pad) / 2 }}" y2="{{ pad + i * (h - 2 * pad) / 2 }}" class="grid"/>{% endfor %}
+      <path d="{{ ns.line }} L {{ '%.1f'|format(w - pad) }} {{ h - pad }} L {{ pad }} {{ h - pad }} Z" fill="url(#area)"/>
+      <path d="{{ ns.line }}" class="line"/>
+      {% for x, y, n in ns.pts %}<circle cx="{{ x }}" cy="{{ y }}" r="{{ 5 if loop.last else 3 }}" class="{{ 'pt last' if loop.last else 'pt' }}"><title>{{ n }} tickets</title></circle>{% endfor %}
+      {% for month, n in chart %}<text x="{{ pad + loop.index0 * step }}" y="{{ h + 16 }}" text-anchor="middle">{{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month[5:]|int - 1] }}</text>{% endfor %}
+    </svg>
+    <div class="small text-muted">{{ chart[-1][1] }} submitted this month</div>
+  </section>
+</div>
+{% endblock %}

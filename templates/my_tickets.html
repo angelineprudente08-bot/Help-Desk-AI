@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_badges.html" import priority_badge %}
+{% block title %}My Requests - HelpDesk AI{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
+  <div>
+    <h1>My Requests</h1>
+    <p>Service requests you have submitted and their current status.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('new_ticket') }}">Submit a request</a>
+</div>
+<div class="card shadow-sm table-card">
+  <table class="table">
+    <thead><tr><th>Ref.</th><th>Subject</th><th>Category</th><th>Priority</th><th>Status</th><th>Date submitted</th></tr></thead>
+    <tbody>
+      {% for t in tickets %}
+        <tr>
+          <td>#{{ t.id }}</td>
+          <td><a href="{{ url_for('ticket_detail', ticket_id=t.id) }}">{{ t.title }}</a></td>
+          <td>{{ t.category or "Pending review" }}</td>
+          <td>{{ priority_badge(t.priority, t.priority_source) }}</td>
+          <td><span class="badge bg-secondary status-{{ t.status|lower|replace(' ', '-') }}">{{ t.status }}</span></td>
+          <td>{{ t.created_at }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="text-muted">You have not submitted any requests.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

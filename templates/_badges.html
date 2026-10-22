@@ -1,0 +1,7 @@
+{# Priority shown as a coloured badge, with a small "Auto" tag when the system set it #}
+{% macro priority_badge(priority, source) -%}
+{% if priority %}
+<span class="badge priority priority-{{ priority|lower }}">{{ priority }}</span>
+{%- if source in ("model", "rules", "default") %} <span class="auto-tag" title="Set automatically ({{ {'model': 'AI model', 'rules': 'keyword rules', 'default': 'default'}[source] }})">Auto</span>{% endif %}
+{% else %}<span class="badge bg-warning text-dark">Pending review</span>{% endif %}
+{%- endmacro %}

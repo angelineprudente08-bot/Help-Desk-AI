@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}User Management - HelpDesk AI{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>User Management</h1>
+  <p>Review registered users and assign their access roles.</p>
+</div>
+<div class="card shadow-sm table-card">
+  <table class="table align-middle">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Email address</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td>{{ u.name }}</td>
+        <td>{{ u.email }}</td>
+        <td>
+          {% if u.id == session.user_id %}
+            <span class="text-capitalize">{{ u.role }}</span> <span class="text-muted">(current user)</span>
+          {% else %}
+          <form method="post" class="d-flex gap-2">
+            <input type="hidden" name="user_id" value="{{ u.id }}">
+            <select name="role" class="form-select form-select-sm w-auto text-capitalize">
+              {% for r in roles %}
+              <option value="{{ r }}" {% if r == u.role %}selected{% endif %}>{{ r }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-sm btn-primary">Save</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

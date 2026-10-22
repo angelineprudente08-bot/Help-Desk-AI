@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Reports - HelpDesk AI{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
+  <div>
+    <h1>Reports</h1>
+    <p>Summary of ticket volume, resolution performance and model accuracy.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('admin_reports_csv') }}">Export to CSV</a>
+</div>
+
+<div class="section-title">Tickets by status</div>
+<div class="row g-3 mb-4">
+  {% for s in statuses %}
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="stat-label">{{ s }}</div>
+        <div class="stat-value">{{ counts.get(s, 0) }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="section-title">Average resolution time</div>
+        {% if avg_hours is not none %}
+          <div class="stat-value">{{ "%.1f"|format(avg_hours) }} hours</div>
+        {% else %}
+          <p class="text-muted mb-0">No tickets have been resolved yet.</p>
+        {% endif %}
+        <div class="small text-muted mt-2">{{ total }} tickets in total</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="section-title">Technician agreement with the model</div>
+        {% if agree.reviewed %}
+          <dl class="detail-list mb-2">
+            <dt>Category</dt><dd>{{ (100 * agree.same_category / agree.reviewed)|round|int }}%</dd>
+            <dt>Priority</dt><dd>{{ (100 * agree.same_priority / agree.reviewed)|round|int }}%</dd>
+          </dl>
+          <div class="small text-muted">Based on {{ agree.reviewed }} reviewed tickets</div>
+        {% else %}
+          <p class="text-muted mb-0">No tickets have been reviewed yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

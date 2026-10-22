@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Categories and Teams - HelpDesk AI{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Categories and Teams</h1>
+  <p>Define ticket categories and the support team responsible for each.</p>
+</div>
+<div class="card shadow-sm table-card mb-4">
+  <table class="table align-middle">
+    <thead>
+      <tr><th>Category</th><th>Responsible team</th></tr>
+    </thead>
+    <tbody>
+      {% for c in categories %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td>
+          <form method="post" class="d-flex gap-2">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="name" value="{{ c.name }}">
+            <input name="team" class="form-control form-control-sm" value="{{ c.team }}" aria-label="Team for {{ c.name }}">
+            <button class="btn btn-sm btn-primary">Save</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="section-title">Add a category</div>
+    <form method="post" class="d-flex gap-2 flex-wrap">
+      <input type="hidden" name="action" value="add">
+      <input name="name" class="form-control" style="flex: 1 1 200px" placeholder="Category name" aria-label="Category name">
+      <input name="team" class="form-control" style="flex: 1 1 200px" placeholder="Responsible team" aria-label="Responsible team">
+      <button class="btn btn-success">Add category</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

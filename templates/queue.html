@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_badges.html" import priority_badge %}
+{% block title %}Ticket Queue - HelpDesk AI{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Ticket Queue</h1>
+  <p>All service requests, with the classification suggested by the model.</p>
+</div>
+<div class="card shadow-sm table-card">
+  <table class="table align-middle">
+    <thead><tr><th>Ref.</th><th>Subject</th><th>Requester</th><th>Category</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for t in tickets %}
+        <tr>
+          <td>#{{ t.id }}</td>
+          <td><a href="{{ url_for('ticket_detail', ticket_id=t.id) }}">{{ t.title }}</a></td>
+          <td>{{ t.requester }}</td>
+          <td>
+            {% if t.category %}{{ t.category }}
+            {% else %}<span class="badge bg-warning text-dark">Manual triage required</span>{% endif %}
+            {% if t.suggested_category %}
+              <div class="small text-muted">Model: {{ t.suggested_category }} ({{ (t.category_score * 100)|round|int }}%)</div>
+            {% endif %}
+          </td>
+          <td>
+            {{ priority_badge(t.priority, t.priority_source) }}
+            {% if t.suggested_priority %}
+              <div class="small text-muted">Model: {{ t.suggested_priority }} ({{ (t.priority_score * 100)|round|int }}%)</div>
+            {% endif %}
+          </td>
+          <td><span class="badge bg-secondary status-{{ t.status|lower|replace(' ', '-') }}">{{ t.status }}</span></td>
+          <td class="text-nowrap">
+            {% set next = allowed_statuses(t.status, session.role) %}
+            {% if "In Progress" in next and t.status in ("New", "Assigned") %}
+              <form method="post" action="{{ url_for('ticket_detail', ticket_id=t.id) }}" class="d-inline">
+                <input type="hidden" name="action" value="status">
+                <button class="btn btn-primary btn-sm" name="status" value="In Progress">Start</button>
+              </form>
+            {% endif %}
+            {% if "Resolved" in next %}
+              <a class="btn btn-outline-formal btn-sm" href="{{ url_for('ticket_detail', ticket_id=t.id) }}#process">Mark as done</a>
+            {% elif not next %}
+              <span class="small text-muted">{{ "Assign first" if t.status == "New" else "No action" }}</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-muted">There are no tickets in the queue.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

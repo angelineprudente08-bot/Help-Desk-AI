@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Submit a Request - HelpDesk AI{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Submit a Service Request</h1>
+  <p>Describe the issue in detail so the support team can assist you promptly.</p>
+</div>
+<div class="card shadow-sm" style="max-width: 760px">
+  <div class="card-body">
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label" for="title">Subject</label>
+        <input class="form-control" id="title" name="title" maxlength="150" placeholder="A brief summary of the issue" required>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="description">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="6" placeholder="Include what happened, when it started, and any error messages received." required></textarea>
+      </div>
+      <button class="btn btn-primary">Submit request</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

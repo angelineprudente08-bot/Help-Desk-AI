@@ -1,0 +1,20 @@
+{# Small line icons used in the navigation (24x24, drawn with the current text colour) #}
+{% macro icon(name) -%}
+<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+{%- if name == 'dashboard' %}<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>
+{%- elif name == 'plus' %}<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>
+{%- elif name == 'list' %}<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>
+{%- elif name == 'inbox' %}<path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/>
+{%- elif name == 'bell' %}<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>
+{%- elif name == 'users' %}<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>
+{%- elif name == 'tag' %}<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/>
+{%- elif name == 'chart' %}<path d="M3 20h18"/><path d="M5 16l4-5 4 3 6-8"/>
+{%- elif name == 'logout' %}<path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4M6 12h10"/>
+{%- elif name == 'arrow' %}<path d="M7 17L17 7M9 7h8v8"/>
+{%- elif name == 'clock' %}<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+{%- elif name == 'check' %}<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/>
+{%- elif name == 'alert' %}<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/>
+{%- elif name == 'ticket' %}<path d="M3 8a2 2 0 0 0 0 4v0a2 2 0 0 1 0 4v2h18v-2a2 2 0 0 1 0-4 2 2 0 0 1 0-4V6H3z"/><path d="M14 6v12" stroke-dasharray="2 2"/>
+{%- endif %}
+</svg>
+{%- endmacro %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero">
+  <img class="logo" src="{{ url_for('static', filename='logo.svg') }}" alt="HelpDesk AI logo">
+  <div class="eyebrow">IT Service Desk</div>
+  <h1>HelpDesk AI</h1>
+  <p>Submit IT service requests and follow their progress through to resolution.</p>
+  <div class="hero-actions">
+    {% if not session.user_id %}
+      <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}">Sign in</a>
+      <a class="btn btn-outline-formal btn-lg" href="{{ url_for('register') }}">Create an account</a>
+    {% elif session.role == 'requester' %}
+      <a class="btn btn-primary btn-lg" href="{{ url_for('new_ticket') }}">Submit a request</a>
+      <a class="btn btn-outline-formal btn-lg" href="{{ url_for('my_tickets') }}">View my requests</a>
+    {% else %}
+      <a class="btn btn-primary btn-lg" href="{{ url_for('queue') }}">Open the ticket queue</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
